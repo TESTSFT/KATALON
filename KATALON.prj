@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
    <description></description>
-   <name>KATALON</name>
+   <name>Prueba Web Temporal Softland</name>
    <tag></tag>
-   <UUID>6ec74612-6a16-4de4-b9f4-09414a29af7f</UUID>
+   <UUID>ef5b5502-b71b-483b-ad40-5ed9e2830ab4</UUID>
    <freeLicense>false</freeLicense>
    <migratedVersion>5.9.0</migratedVersion>
    <pageLoadTimeout>0</pageLoadTimeout>
@@ -26,5 +26,5 @@
       </systemFolderList>
    </sourceContent>
    <timeStampInProperties>false</timeStampInProperties>
-   <type>GENERIC</type>
+   <type>WEBUI</type>
 </Project>

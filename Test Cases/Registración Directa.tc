@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Prueba Registración directa</description>
+   <name>Registración Directa</name>
+   <tag></tag>
+   <comment></comment>
+   <testCaseGuid>ad7d9cca-c799-48f5-b102-e20419d31288</testCaseGuid>
+</TestCaseEntity>

@@ -1,74 +1,75 @@
-# Cargar librería para usar SendKeys
-Add-Type -AssemblyName System.Windows.Forms
- 
-# Buscar el archivo .exe dentro de C:\Release
-$archivoExe = Get-ChildItem -Path "C:\Release" -Filter *.exe | Select-Object -First 1
- 
-if (-not $archivoExe) {
-    Write-Host " No se encontró ningún archivo .exe en C:\Release"
-    exit
-}
- 
-# Ejecutar el instalador
-Start-Process -FilePath $archivoExe.FullName
-Write-Host " Instalador iniciado: $($archivoExe.FullName)"
- 
-# Esperar a que la ventana del instalador se abra
-Start-Sleep -Seconds 5
- 
-# Enviar Enter para avanzar
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
- 
-# Esperar que la ventana esté activa
-Start-Sleep -Seconds 5
- 
-# Primer checkbox (Tab + Espacio)
-[System.Windows.Forms.SendKeys]::SendWait("{TAB}")
-[System.Windows.Forms.SendKeys]::SendWait(" ")
- 
-# Confirmar
-Start-Sleep -Seconds 1
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
- 
-# Segundo checkbox (Tab + Espacio)
-Start-Sleep -Seconds 5
-[System.Windows.Forms.SendKeys]::SendWait("{TAB}")
-[System.Windows.Forms.SendKeys]::SendWait(" ")
- 
-# Confirmar nuevamente
-Start-Sleep -Seconds 1
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
- 
-# Paso siguiente
-Start-Sleep -Seconds 1
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
- 
-# Esperar que la instalación trabaje
-Start-Sleep -Seconds 20
- 
-###  Simular autenticación con contraseña
- 
-# Esperar que se abra la ventana final (1500 segundos aprox como en Power Automate)
-Start-Sleep -Seconds 1500
- 
-# Presionar Enter para que se active
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
- 
-# Esperar que se active el campo de texto
-Start-Sleep -Seconds 10
- 
-# Escribir la contraseña
-[System.Windows.Forms.SendKeys]::SendWait("Softland6343@!")
- 
-# Enviar Enter para confirmar
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
- 
-# Esperar un poco por seguridad
-Start-Sleep -Seconds 10
- 
-# Confirmaciones finales con Enter
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-Start-Sleep -Seconds 1
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
- 
-Write-Host " Automatización del instalador completada."
+steps:
+- powershell: |
+    # Cargar librería para usar SendKeys
+    Add-Type -AssemblyName System.Windows.Forms
+
+    # Buscar el archivo .exe dentro de C:\Release
+    $archivoExe = Get-ChildItem -Path "C:\Release" -Filter "*.exe" | Select-Object -First 1
+
+    if (-not $archivoExe) {
+        Write-Host "No se encontró ningún archivo .exe en C:\Release"
+        exit 1
+    }
+
+    # Ejecutar el instalador
+    Start-Process -FilePath $archivoExe.FullName
+    Write-Host "Instalador iniciado: $($archivoExe.FullName)"
+
+    # Esperar a que la ventana del instalador se abra
+    Start-Sleep -Seconds 5
+
+    # Enviar Enter para avanzar
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+
+    # Esperar que la ventana esté activa
+    Start-Sleep -Seconds 5
+
+    # Primer checkbox
+    [System.Windows.Forms.SendKeys]::SendWait("{TAB}")
+    [System.Windows.Forms.SendKeys]::SendWait(" ")
+
+    # Confirmar
+    Start-Sleep -Seconds 1
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+
+    # Segundo checkbox
+    Start-Sleep -Seconds 5
+    [System.Windows.Forms.SendKeys]::SendWait("{TAB}")
+    [System.Windows.Forms.SendKeys]::SendWait(" ")
+
+    # Confirmar nuevamente
+    Start-Sleep -Seconds 1
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+
+    # Paso siguiente
+    Start-Sleep -Seconds 1
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+
+    # Esperar que la instalación trabaje
+    Start-Sleep -Seconds 20
+
+    # Esperar la ventana final
+    Start-Sleep -Seconds 1500
+
+    # Presionar Enter para que se active
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+
+    # Esperar que se active el campo de texto
+    Start-Sleep -Seconds 10
+
+    # Escribir la contraseña
+    [System.Windows.Forms.SendKeys]::SendWait("Softland6343@!")
+
+    # Confirmar
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+
+    Start-Sleep -Seconds 10
+
+    # Confirmaciones finales
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+    Start-Sleep -Seconds 1
+    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+
+    Write-Host "Automatización del instalador completada."
+
+  displayName: 'Instalar Setup Softland'

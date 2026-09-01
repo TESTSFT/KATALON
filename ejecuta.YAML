@@ -11,7 +11,7 @@ trigger: none
 # ============================================================
 
 pool:
-  vmImage: 'windows-latest'
+  name: 'Softland-QA'
 
 steps:
 

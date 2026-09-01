@@ -7,225 +7,362 @@ steps:
 
 - powershell: |
 
-    # ============================================================
-    # Cargar librería para usar SendKeys
-    # ============================================================
-
-    Add-Type -AssemblyName System.Windows.Forms
-
-
-    # ============================================================
-    # Buscar el archivo .exe dentro de C:\Release
-    # ============================================================
-
-    $archivoExe = Get-ChildItem `
-        -Path "C:\Release" `
-        -Filter "*.exe" |
-        Select-Object -First 1
-
-
-    if (-not $archivoExe) {
-
-        Write-Host "No se encontró ningún archivo .exe en C:\Release"
-
-        exit 1
-    }
+    Write-Host "=================================================="
+    Write-Host "COPIA DE SETUPS SAR / OFISIS"
+    Write-Host "=================================================="
+    Write-Host "Equipo: $env:COMPUTERNAME"
+    Write-Host "Usuario: $env:USERNAME"
+    Write-Host ""
 
 
     # ============================================================
-    # Ejecutar el instalador
+    # RUTA DE ORIGEN
     # ============================================================
 
-    Start-Process -FilePath $archivoExe.FullName
-
-    Write-Host "Instalador iniciado: $($archivoExe.FullName)"
+    $origen = "\\apollo\TES\Actualizacion_release"
 
 
+   
     # ============================================================
-    # Esperar a que la ventana del instalador se abra
-    # ============================================================
-
-    Start-Sleep -Seconds 5
-
-
-    # ============================================================
-    # Enviar Enter para avanzar
+    # SERVIDORES DESTINO SAR 5.0
     # ============================================================
 
-    Write-Host "Paso 1 - ENTER"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-
-
-    # ============================================================
-    # Esperar que la ventana esté activa
-    # ============================================================
-
-    Start-Sleep -Seconds 5
-
-
-    # ============================================================
-    # Primer checkbox
-    # TAB + ESPACIO
-    # ============================================================
-
-    Write-Host "Paso 2 - Primer checkbox"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{TAB}")
-
-    [System.Windows.Forms.SendKeys]::SendWait(" ")
-
-
-    # ============================================================
-    # Confirmar
-    # ============================================================
-
-    Start-Sleep -Seconds 1
-
-    Write-Host "Paso 3 - Confirmar primer checkbox"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-
-
-    # ============================================================
-    # Segundo checkbox
-    # TAB + ESPACIO
-    # ============================================================
-
-    Start-Sleep -Seconds 5
-
-    Write-Host "Paso 4 - Segundo checkbox"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{TAB}")
-
-    [System.Windows.Forms.SendKeys]::SendWait(" ")
-
-
-    # ============================================================
-    # Confirmar nuevamente
-    # ============================================================
-
-    Start-Sleep -Seconds 1
-
-    Write-Host "Paso 5 - Confirmar segundo checkbox"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-
-
-    # ============================================================
-    # Paso siguiente
-    # ============================================================
-
-    Start-Sleep -Seconds 1
-
-    Write-Host "Paso 6 - Continuar instalación"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-
-
-    # ============================================================
-    # Esperar que la instalación trabaje
-    # ============================================================
-
-    Write-Host "Instalación trabajando..."
-
-    Start-Sleep -Seconds 20
-
-
-    # ============================================================
-    # Simular autenticación con contraseña
-    #
-    # Esperar que se abra la ventana final
-    # 1300 segundos
-    # ============================================================
-
-    Write-Host "Esperando ventana de autenticación..."
-
-    Start-Sleep -Seconds 1300
-
-
-    # ============================================================
-    # Presionar Enter para activar
-    # ============================================================
-
-    Write-Host "Paso 7 - Activar ventana"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-
-
-    # ============================================================
-    # Esperar que se active el campo de texto
-    # ============================================================
-
-    Start-Sleep -Seconds 5
-
-
-    # ============================================================
-    # Validar contraseña
-    # ============================================================
-
-    if ([string]::IsNullOrWhiteSpace($env:SETUP_PASSWORD)) {
-
-        Write-Error "No está definida la variable SetupPassword."
-
-        exit 1
-    }
-
-
-    # ============================================================
-    # Escribir contraseña
-    # ============================================================
-
-    Write-Host "Paso 8 - Ingresando contraseña"
-
-    [System.Windows.Forms.SendKeys]::SendWait(
-        $env:SETUP_PASSWORD
+    $destinos500 = @(
+        "\\SARDT4001\Release",
+        "\\SARDT4000\Release",
+        "\\SARTES502022\Release",
+        "\\SARTES042022\Release"
     )
 
 
     # ============================================================
-    # Enviar Enter para confirmar
+   
+    # ============================================================
+    # DESTINO OFISIS 5.0
     # ============================================================
 
-    Write-Host "Paso 9 - Confirmar contraseña"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-
-
-    # ============================================================
-    # Esperar un poco por seguridad
-    # ============================================================
-
-    Start-Sleep -Seconds 10
+    $destinofi500 = @(
+        "\\OFISIS502022\Release"
+    )
 
 
     # ============================================================
-    # Confirmaciones finales
+    # VALIDAR EXISTENCIA DEL ORIGEN
     # ============================================================
 
-    Write-Host "Paso 10 - Confirmación final 1"
+    Write-Host "Validando ruta de origen:"
+    Write-Host $origen
+    Write-Host ""
 
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+    if (-not (Test-Path $origen)) {
 
+        Write-Error "La ruta de origen $origen no existe o no se puede acceder."
 
-    Start-Sleep -Seconds 1
+        exit 1
+    }
 
-
-    Write-Host "Paso 11 - Confirmación final 2"
-
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+    Write-Host "OK - Ruta de origen accesible."
+    Write-Host ""
 
 
     # ============================================================
-    # Finalización
+    # OBTENER ARCHIVOS SETUPSAR
+    # ============================================================
+
+    Write-Host "Buscando archivos setupSAR_*..."
+
+    $setups1 = @(
+        Get-ChildItem `
+            -Path $origen `
+            -Filter "setupSAR_*" `
+            -File
+    )
+
+    if ($setups1.Count -eq 0) {
+
+        Write-Error "No se encontraron archivos setupSAR_* en $origen."
+
+        exit 1
+    }
+
+    Write-Host "Setups SAR encontrados: $($setups1.Count)"
+
+    foreach ($archivo in $setups1) {
+
+        Write-Host " - $($archivo.Name)"
+    }
+
+    Write-Host ""
+
+
+    # ============================================================
+    # OBTENER ARCHIVOS SETUPOFISIS
+    # ============================================================
+
+    Write-Host "Buscando archivos setupOFISIS_*..."
+
+    $setups2 = @(
+        Get-ChildItem `
+            -Path $origen `
+            -Filter "setupOFISIS_*" `
+            -File
+    )
+
+    if ($setups2.Count -eq 0) {
+
+        Write-Error "No se encontraron archivos setupOFISIS_* en $origen."
+
+        exit 1
+    }
+
+    Write-Host "Setups OFISIS encontrados: $($setups2.Count)"
+
+    foreach ($archivo in $setups2) {
+
+        Write-Host " - $($archivo.Name)"
+    }
+
+    Write-Host ""
+
+
+    # ============================================================
+    # INICIALIZAR VARIABLES
+    # ============================================================
+
+    $setup460    = $null
+    $setup500    = $null
+    $setupofi460 = $null
+    $setupofi500 = $null
+
+
+    # ============================================================
+    # DETECTAR VERSIONES SAR
+    # ============================================================
+
+    Write-Host "Detectando versiones SAR..."
+
+    foreach ($archivo in $setups1) {
+
+        $nombre = $archivo.Name
+
+        if ($nombre -like "setupSAR_4.6.0*") {
+
+            $setup460 = $archivo.FullName
+
+            Write-Host "SAR 4.6 detectado:"
+            Write-Host $setup460
+        }
+        elseif ($nombre -like "setupSAR_5.0.0*") {
+
+            $setup500 = $archivo.FullName
+
+            Write-Host "SAR 5.0 detectado:"
+            Write-Host $setup500
+        }
+    }
+
+    Write-Host ""
+
+
+    # ============================================================
+    # DETECTAR VERSIONES OFISIS
+    # ============================================================
+
+    Write-Host "Detectando versiones OFISIS..."
+
+    foreach ($archivo in $setups2) {
+
+        $nombre = $archivo.Name
+
+        if ($nombre -like "setupOFISIS_4.6.0*") {
+
+            $setupofi460 = $archivo.FullName
+
+            Write-Host "OFISIS 4.6 detectado:"
+            Write-Host $setupofi460
+        }
+        elseif ($nombre -like "setupOFISIS_5.0.0*") {
+
+            $setupofi500 = $archivo.FullName
+
+            Write-Host "OFISIS 5.0 detectado:"
+            Write-Host $setupofi500
+        }
+    }
+
+    Write-Host ""
+
+
+    # ============================================================
+    # FUNCION PARA LIMPIAR CARPETA
+    # ============================================================
+
+    function Limpiar-Carpeta {
+
+        param (
+            [string]$ruta
+        )
+
+        try {
+
+            Write-Host ""
+            Write-Host "Limpiando:"
+            Write-Host $ruta
+
+            Get-ChildItem `
+                -Path $ruta `
+                -Force `
+                -ErrorAction Stop |
+            Remove-Item `
+                -Force `
+                -Recurse `
+                -ErrorAction Stop
+
+            Write-Host "Carpeta limpiada correctamente."
+
+            return $true
+        }
+        catch {
+
+            Write-Warning "No se pudo limpiar la carpeta $ruta."
+
+            Write-Warning "Detalles:"
+            Write-Warning $_.Exception.Message
+
+            return $false
+        }
+    }
+
+
+    # ============================================================
+    # FUNCION PARA COPIAR SETUP
+    # ============================================================
+
+    function Copiar-Setup {
+
+        param (
+            [string]$rutaDestino,
+            [string]$archivoSetup
+        )
+
+        Write-Host ""
+        Write-Host "--------------------------------------------------"
+        Write-Host "Procesando destino:"
+        Write-Host $rutaDestino
+        Write-Host "--------------------------------------------------"
+
+
+        # Validar destino
+
+        if (-not (Test-Path $rutaDestino)) {
+
+            Write-Warning "No se encontró la ruta destino:"
+            Write-Warning $rutaDestino
+
+            return
+        }
+
+
+        # Limpiar carpeta
+
+        $limpiezaOK = Limpiar-Carpeta `
+            -ruta $rutaDestino
+
+
+        if (-not $limpiezaOK) {
+
+            Write-Warning "Se omite la copia porque no se pudo limpiar el destino."
+
+            return
+        }
+
+
+        # Copiar archivo
+
+        try {
+
+            Copy-Item `
+                -Path $archivoSetup `
+                -Destination $rutaDestino `
+                -Force `
+                -ErrorAction Stop
+
+            Write-Host "Setup copiado correctamente."
+            Write-Host "Origen : $archivoSetup"
+            Write-Host "Destino: $rutaDestino"
+        }
+        catch {
+
+            Write-Warning "No se pudo copiar el setup."
+
+            Write-Warning "Origen:"
+            Write-Warning $archivoSetup
+
+            Write-Warning "Destino:"
+            Write-Warning $rutaDestino
+
+            Write-Warning "Error:"
+            Write-Warning $_.Exception.Message
+        }
+    }
+
+
+    # ============================================================
+    # PROCESAR DESTINOS SAR 5.0
     # ============================================================
 
     Write-Host ""
-    Write-Host "=============================================="
-    Write-Host "Automatización del instalador completada."
-    Write-Host "=============================================="
+    Write-Host "=================================================="
+    Write-Host "PROCESANDO SAR 5.0"
+    Write-Host "=================================================="
 
-  env:
-    SETUP_PASSWORD: $(SetupPassword)
+    if ($setup500) {
 
-  displayName: 'Ejecutar Setup Softland'
+        foreach ($ruta in $destinos500) {
+
+            Copiar-Setup `
+                -rutaDestino $ruta `
+                -archivoSetup $setup500
+        }
+    }
+    else {
+
+        Write-Warning "No se encontró setup SAR 5.0."
+    }
+
+
+ 
+    # ============================================================
+    # PROCESAR DESTINO OFISIS 5.0
+    # ============================================================
+
+    Write-Host ""
+    Write-Host "=================================================="
+    Write-Host "PROCESANDO OFISIS 5.0"
+    Write-Host "=================================================="
+
+    if ($setupofi500) {
+
+        foreach ($ruta in $destinofi500) {
+
+            Copiar-Setup `
+                -rutaDestino $ruta `
+                -archivoSetup $setupofi500
+        }
+    }
+    else {
+
+        Write-Warning "No se encontró setup OFISIS 5.0."
+    }
+
+
+    # ============================================================
+    # FINALIZACION
+    # ============================================================
+
+    Write-Host ""
+    Write-Host "=================================================="
+    Write-Host "PROCESO DE COPIA FINALIZADO"
+    Write-Host "=================================================="
+
+  displayName: 'Copiar Setups SAR y OFISIS'
